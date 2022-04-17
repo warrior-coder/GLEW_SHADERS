@@ -21,6 +21,10 @@
   <ItemGroup>
     <ClCompile Include="Sources\Main.c" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\FragmentShader.glsl" />
+    <None Include="Resources\VertexShader.glsl" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
