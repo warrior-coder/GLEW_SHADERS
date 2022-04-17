@@ -13,11 +13,12 @@ Fragment Shader выполняется для каждого пикселя примитива
 .glsl – OpenGL Shading Language (язык программирования шейдеров)
  */
 
+
  // загрузка кода шейдера в С-строку из файла
 char* LoadShader(const char* fileName)
 {
 	FILE* filePtr;
-
+	
 	// открытие файла
 	fopen_s(&filePtr, fileName, "rb");
 	if (!filePtr)
@@ -42,27 +43,40 @@ char* LoadShader(const char* fileName)
 	memset(shaderCode, '\0', fileSize + 1);
 	fread(shaderCode, sizeof(char), fileSize, filePtr);
 
+	// очистка комментариев кода
+	for (int i = 0; shaderCode[i] != '\0'; i++)
+	{
+		if (shaderCode[i] == '/' && shaderCode[i + 1] == '/')
+		{
+			int j = 0;
+			while (shaderCode[i + j] != '\n')
+			{
+				shaderCode[i + j] = ' ';
+				j++;
+			}
+			i += j;
+		}
+		if (shaderCode[i] == '/' && shaderCode[i + 1] == '*')
+		{
+			int j = 0;
+			while (shaderCode[i + j] != '*' || shaderCode[i + j + 1] != '/')
+			{
+				shaderCode[i + j] = ' ';
+				j++;
+			}
+			shaderCode[i + j] = shaderCode[i + j + 1] = ' ';
+			j += 2;
+
+			i += j;
+		}
+	}
+	
 	printf("Code size: %d\n", strlen(shaderCode));
 	printf("Shader code:\n%s\n", shaderCode);
 
 	return shaderCode;
 }
 
-// функция обработки событий нажатия клавиш
-void KeyCallback(GLFWwindow* window, int keyCode, int scanCode, int action, int mods)
-{
-	if (action == GLFW_PRESS)
-	{
-		if (keyCode == GLFW_KEY_ESCAPE)
-		{
-			
-		}
-	}
-	else if (action == GLFW_RELEASE)
-	{
-		
-	}
-}
 
 int main(void)
 {
@@ -91,9 +105,9 @@ int main(void)
 		return 3;
 	}
 
-
 	GLint success;
 	GLchar infoLog[512];
+
 
 	// компиляция вершинного шейдера
 	char* vertexShaderCode = LoadShader("Resources/VertexShader.glsl");
@@ -163,12 +177,37 @@ int main(void)
 		return 6;
 	}
 
-	// устанавливаем функцию-обработчик событий окна
-	glfwSetKeyCallback(window, KeyCallback);
+
+	const GLfloat vertexCoordinates[] = {
+		0.0f, 1.0f,
+		0.87f, -0.5f,
+		-0.87f, -0.5f
+	};
+	const GLfloat vertexColors[] = {
+		1, 0, 0,
+		0, 1, 0,
+		0, 0, 1
+	};
+
+
+	// каждый объект OpenGL имеет свой id
+	GLuint vertexCoordinatesBufferId; // номер буфера массива координат вершин
+	GLuint vertexColorsBufferId; // номер буфера массива цветов вершин
+
+	glGenBuffers(1, &vertexCoordinatesBufferId); // генерируем 1 буфер на видеокарте
+	glBindBuffer(GL_ARRAY_BUFFER, vertexCoordinatesBufferId); // связываем vertexCoordinatesBufferId с буфером
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertexCoordinates), vertexCoordinates, GL_STATIC_DRAW); // копируем данные vertexCoordinates из оперативной памяти в буфер на видеокарту
+	glBindBuffer(GL_ARRAY_BUFFER, 0u); // отвязываемся от буфера
+
+	// создадим и заполним буфер цветов вершин
+	glGenBuffers(1, &vertexColorsBufferId);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexColorsBufferId);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertexColors), vertexColors, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0u);
+
 
 	// основной цикл программы
 	GLfloat rotateAngle = 0.0f;
-
 	while (!glfwWindowShouldClose(window) && !glfwGetKey(window, GLFW_KEY_ESCAPE))
 	{
 		// отрисовка изображения
@@ -181,12 +220,20 @@ int main(void)
 		rotateAngle += 0.05f;
 
 		glUseProgram(programId); // активируем программу отрисовки
-		glBegin(GL_TRIANGLES);
-			glColor3f(1, 0, 0); glVertex2f(0.0f, 1.0f);
-			glColor3f(0, 1, 0); glVertex2f(0.87f, -0.5f);
-			glColor3f(0, 0, 1); glVertex2f(-0.87f, -0.5f);
-		glEnd();
-		glUseProgram(0u); // активируем программу отрисовки
+			glBindBuffer(GL_ARRAY_BUFFER, vertexCoordinatesBufferId);
+			glVertexPointer(2, GL_FLOAT, 0, NULL); // источник вершин NULL значит координаты вершин берутся из текущего буфера
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+			glBindBuffer(GL_ARRAY_BUFFER, vertexColorsBufferId);
+			glColorPointer(3, GL_FLOAT, 0, NULL); // источник вершин NULL значит цвета вершин берутся из текущего буфера
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+			glEnableClientState(GL_VERTEX_ARRAY); // включаем использование массива вершин
+			glEnableClientState(GL_COLOR_ARRAY); // включаем использование массива цветов
+				glDrawArrays(GL_TRIANGLES, 0, 3); // рисуем примитив по включенному массиву
+			glDisableClientState(GL_VERTEX_ARRAY); // отключаем использование массива вершин
+			glDisableClientState(GL_COLOR_ARRAY); // отключаем использование массива цветов
+		glUseProgram(0u); // отключаем программу отрисовки
 
 		glPopMatrix(); // загружаем матрицу из стека (возвращаем ее прежнее состояние)
 
@@ -195,8 +242,6 @@ int main(void)
 
 		// запрос на обработку событий
 		glfwPollEvents();
-
-		
 	}
 
 	// освобождение памяти
