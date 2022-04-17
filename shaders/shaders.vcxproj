@@ -19,11 +19,15 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Sources\Loaders.c" />
     <ClCompile Include="Sources\Main.c" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\FragmentShader.glsl" />
     <None Include="Resources\VertexShader.glsl" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Sources\Loaders.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

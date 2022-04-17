@@ -18,6 +18,9 @@
     <ClCompile Include="Sources\Main.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Sources\Loaders.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\FragmentShader.glsl">
@@ -26,5 +29,10 @@
     <None Include="Resources\VertexShader.glsl">
       <Filter>Resource Files</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Sources\Loaders.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
