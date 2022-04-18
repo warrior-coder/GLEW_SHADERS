@@ -68,7 +68,7 @@ GLuint LoadVertexShader(const char* vertexShaderFilePath)
 	GLchar* vertexShaderCode = LoadShaderCode(vertexShaderFilePath);
 	GLuint vertexShaderId = glCreateShader(GL_VERTEX_SHADER); // создает Vertex Shader и возвращает его id
 	GLint success;
-
+	 
 	glShaderSource(vertexShaderId, 1, &vertexShaderCode, NULL); // задаем текст кода шейдера
 	glCompileShader(vertexShaderId); // компиляция шейдера
 	free(vertexShaderCode);

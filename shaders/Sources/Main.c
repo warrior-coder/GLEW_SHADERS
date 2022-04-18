@@ -22,7 +22,7 @@ int main(void)
 
 
 	// создание окна с контекстом OpenGL
-	GLFWwindow* window = glfwCreateWindow(400, 400, "GLEW Shaders", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(512, 512, "GLEW Shaders", NULL, NULL);
 	if (!window)
 	{
 		glfwTerminate();
